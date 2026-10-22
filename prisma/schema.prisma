@@ -1,0 +1,147 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id         String              @id @default(uuid())
+  email      String              @unique
+  name       String?
+  googleSub  String?             @unique
+  createdAt  DateTime            @default(now())
+  passkeys   PasskeyCredential[]
+  tokens     RefreshToken[]
+  categories Category[]
+  payments   Payment[]
+  payeeRules PayeeRule[]
+  smsEvents  SmsEvent[]
+}
+
+model PasskeyCredential {
+  id           String    @id @default(uuid())
+  userId       String
+  credentialId String    @unique
+  publicKey    Bytes
+  counter      BigInt    @default(0)
+  transports   String[]
+  deviceName   String?
+  createdAt    DateTime  @default(now())
+  lastUsedAt   DateTime?
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model AuthChallenge {
+  id        String        @id @default(uuid())
+  userId    String?
+  challenge String        @unique
+  type      ChallengeType
+  expiresAt DateTime
+}
+
+enum ChallengeType {
+  REGISTER
+  LOGIN
+}
+
+model RefreshToken {
+  id           String    @id @default(uuid())
+  userId       String
+  tokenHash    String    @unique
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  replacedById String?
+  createdAt    DateTime  @default(now())
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  userId    String
+  name      String
+  icon      String
+  color     String
+  isDefault Boolean   @default(false)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payments  Payment[]
+
+  @@unique([userId, name])
+}
+
+model Payment {
+  id             String         @id @default(uuid())
+  userId         String
+  payeeVpa       String
+  payeeName      String?
+  amountPaise    BigInt?
+  merchantCode   String?
+  categoryId     String?
+  note           String?
+  upiApp         String?
+  rawQr          String
+  status         PaymentStatus  @default(PENDING)
+  upiTxnId       String?
+  upiRef         String?
+  confirmSource  ConfirmSource?
+  idempotencyKey String
+  createdAt      DateTime       @default(now())
+  confirmedAt    DateTime?
+  updatedAt      DateTime       @updatedAt
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category       Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, idempotencyKey])
+  @@index([userId, status])
+  @@index([userId, createdAt])
+}
+
+enum PaymentStatus {
+  PENDING
+  AWAITING_CONFIRMATION
+  CONFIRMED
+  FAILED
+  UNCONFIRMED
+  CANCELLED
+}
+
+enum ConfirmSource {
+  SMS
+  MANUAL
+}
+
+model PayeeRule {
+  userId     String
+  vpa        String
+  categoryId String
+  lastName   String?
+  useCount   Int      @default(1)
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, vpa])
+}
+
+model SmsEvent {
+  id               String   @id @default(uuid())
+  userId           String
+  bank             String
+  amountPaise      BigInt
+  upiRef           String?
+  accountLast4     String?
+  payeeHint        String?
+  receivedAt       DateTime
+  matchedPaymentId String?
+  createdAt        DateTime @default(now())
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, receivedAt])
+}
