@@ -4,10 +4,13 @@ import {
   IsInt,
   IsNotEmpty,
   IsString,
+  Matches,
   Max,
   Min,
+  MinLength,
   validateSync,
 } from 'class-validator';
+import type { StringValue } from 'ms';
 
 export enum NodeEnv {
   Development = 'development',
@@ -27,6 +30,17 @@ export class EnvironmentVariables {
   @IsString()
   @IsNotEmpty()
   DATABASE_URL: string;
+
+  @IsString()
+  @MinLength(32)
+  JWT_SECRET: string;
+
+  @Matches(/^\d+[smhd]$/)
+  JWT_ACCESS_TTL: StringValue = '15m';
+
+  @IsInt()
+  @Min(1)
+  REFRESH_TTL_DAYS: number = 30;
 }
 
 export function validateEnv(config: Record<string, unknown>) {

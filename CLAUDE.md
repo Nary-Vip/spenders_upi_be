@@ -7,6 +7,7 @@ NestJS learning project: backend for a UPI expense tracker. Product spec in `pla
 - Build one phase at a time from `plan/phases.md`; stop after each phase so the owner can review and learn.
 - After each phase, explain in detail what was done and which NestJS concepts it introduced.
 - Keep code lean: no explanatory comments in source files; explanations go in the phase write-up.
+- Never edit an applied file in `prisma/migrations/` (not even its comments): Prisma checksums them. Change the schema and create a new migration instead.
 
 ## Commits
 

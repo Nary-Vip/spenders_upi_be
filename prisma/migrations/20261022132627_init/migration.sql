@@ -1,9 +1,13 @@
+-- CreateEnum
 CREATE TYPE "ChallengeType" AS ENUM ('REGISTER', 'LOGIN');
 
+-- CreateEnum
 CREATE TYPE "PaymentStatus" AS ENUM ('PENDING', 'AWAITING_CONFIRMATION', 'CONFIRMED', 'FAILED', 'UNCONFIRMED', 'CANCELLED');
 
+-- CreateEnum
 CREATE TYPE "ConfirmSource" AS ENUM ('SMS', 'MANUAL');
 
+-- CreateTable
 CREATE TABLE "User" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
@@ -14,6 +18,7 @@ CREATE TABLE "User" (
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE "PasskeyCredential" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -28,6 +33,7 @@ CREATE TABLE "PasskeyCredential" (
     CONSTRAINT "PasskeyCredential_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE "AuthChallenge" (
     "id" TEXT NOT NULL,
     "userId" TEXT,
@@ -38,6 +44,7 @@ CREATE TABLE "AuthChallenge" (
     CONSTRAINT "AuthChallenge_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE "RefreshToken" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -50,6 +57,7 @@ CREATE TABLE "RefreshToken" (
     CONSTRAINT "RefreshToken_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE "Category" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -61,6 +69,7 @@ CREATE TABLE "Category" (
     CONSTRAINT "Category_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE "Payment" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -84,6 +93,7 @@ CREATE TABLE "Payment" (
     CONSTRAINT "Payment_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
 CREATE TABLE "PayeeRule" (
     "userId" TEXT NOT NULL,
     "vpa" TEXT NOT NULL,
@@ -95,6 +105,7 @@ CREATE TABLE "PayeeRule" (
     CONSTRAINT "PayeeRule_pkey" PRIMARY KEY ("userId","vpa")
 );
 
+-- CreateTable
 CREATE TABLE "SmsEvent" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -110,40 +121,59 @@ CREATE TABLE "SmsEvent" (
     CONSTRAINT "SmsEvent_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
+-- CreateIndex
 CREATE UNIQUE INDEX "User_googleSub_key" ON "User"("googleSub");
 
+-- CreateIndex
 CREATE UNIQUE INDEX "PasskeyCredential_credentialId_key" ON "PasskeyCredential"("credentialId");
 
+-- CreateIndex
 CREATE INDEX "PasskeyCredential_userId_idx" ON "PasskeyCredential"("userId");
 
+-- CreateIndex
 CREATE UNIQUE INDEX "AuthChallenge_challenge_key" ON "AuthChallenge"("challenge");
 
+-- CreateIndex
 CREATE UNIQUE INDEX "RefreshToken_tokenHash_key" ON "RefreshToken"("tokenHash");
 
+-- CreateIndex
 CREATE INDEX "RefreshToken_userId_idx" ON "RefreshToken"("userId");
 
+-- CreateIndex
 CREATE UNIQUE INDEX "Category_userId_name_key" ON "Category"("userId", "name");
 
+-- CreateIndex
 CREATE INDEX "Payment_userId_status_idx" ON "Payment"("userId", "status");
 
+-- CreateIndex
 CREATE INDEX "Payment_userId_createdAt_idx" ON "Payment"("userId", "createdAt");
 
+-- CreateIndex
 CREATE UNIQUE INDEX "Payment_userId_idempotencyKey_key" ON "Payment"("userId", "idempotencyKey");
 
+-- CreateIndex
 CREATE INDEX "SmsEvent_userId_receivedAt_idx" ON "SmsEvent"("userId", "receivedAt");
 
+-- AddForeignKey
 ALTER TABLE "PasskeyCredential" ADD CONSTRAINT "PasskeyCredential_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
+-- AddForeignKey
 ALTER TABLE "RefreshToken" ADD CONSTRAINT "RefreshToken_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
+-- AddForeignKey
 ALTER TABLE "Category" ADD CONSTRAINT "Category_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
+-- AddForeignKey
 ALTER TABLE "Payment" ADD CONSTRAINT "Payment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
+-- AddForeignKey
 ALTER TABLE "Payment" ADD CONSTRAINT "Payment_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
+-- AddForeignKey
 ALTER TABLE "PayeeRule" ADD CONSTRAINT "PayeeRule_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
+-- AddForeignKey
 ALTER TABLE "SmsEvent" ADD CONSTRAINT "SmsEvent_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
