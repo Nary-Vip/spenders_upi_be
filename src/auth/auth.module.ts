@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import { EnvironmentVariables } from '../config/env.validation.js';
 import { TokenService } from './token.service.js';
 
@@ -11,12 +13,14 @@ import { TokenService } from './token.service.js';
       useFactory: (config: ConfigService<EnvironmentVariables, true>) => ({
         secret: config.get('JWT_SECRET', { infer: true }),
         signOptions: {
+          algorithm: 'HS256',
           expiresIn: config.get('JWT_ACCESS_TTL', { infer: true }),
         },
+        verifyOptions: { algorithms: ['HS256'] },
       }),
     }),
   ],
-  providers: [TokenService],
+  providers: [TokenService, { provide: APP_GUARD, useClass: JwtAuthGuard }],
   exports: [TokenService],
 })
 export class AuthModule {}

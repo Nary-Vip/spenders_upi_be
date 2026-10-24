@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER } from '@nestjs/core';
 import { createObserveModule } from '@nestjs/observe';
+import { AuthModule } from './auth/auth.module.js';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter.js';
 import { validateEnv } from './config/env.validation.js';
 import { HealthModule } from './health/health.module.js';
@@ -21,6 +22,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
       serviceId: 'nary-upi',
     }),
     PrismaModule,
+    AuthModule,
     HealthModule,
   ],
   providers: [{ provide: APP_FILTER, useClass: AllExceptionsFilter }],
