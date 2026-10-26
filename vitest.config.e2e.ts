@@ -8,5 +8,6 @@ export default defineConfig({
     setupFiles: ['reflect-metadata'],
     root: './',
     include: ['**/*.e2e-spec.ts', '**/*.int-spec.ts'],
+    fileParallelism: false,
   },
 });

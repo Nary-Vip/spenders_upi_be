@@ -1,6 +1,6 @@
-import { Module } from '@nestjs/common';
+import { Module, ValidationPipe } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_FILTER } from '@nestjs/core';
+import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { createObserveModule } from '@nestjs/observe';
 import { AuthModule } from './auth/auth.module.js';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter.js';
@@ -25,6 +25,16 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     AuthModule,
     HealthModule,
   ],
-  providers: [{ provide: APP_FILTER, useClass: AllExceptionsFilter }],
+  providers: [
+    { provide: APP_FILTER, useClass: AllExceptionsFilter },
+    {
+      provide: APP_PIPE,
+      useValue: new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+      }),
+    },
+  ],
 })
 export class AppModule {}

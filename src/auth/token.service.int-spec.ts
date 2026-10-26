@@ -171,7 +171,7 @@ describe('TokenService (integration)', () => {
     it('makes the refresh token unusable', async () => {
       const { refreshToken } = await tokens.issueTokens(userId);
 
-      await tokens.revoke(refreshToken);
+      await tokens.revoke(refreshToken, userId);
 
       await expect(tokens.rotate(refreshToken)).rejects.toThrow(
         UnauthorizedException,
@@ -179,7 +179,26 @@ describe('TokenService (integration)', () => {
     });
 
     it('ignores an unknown token', async () => {
-      await expect(tokens.revoke('not-a-real-token')).resolves.toBeUndefined();
+      await expect(
+        tokens.revoke('not-a-real-token', userId),
+      ).resolves.toBeUndefined();
+    });
+
+    it("does not revoke another user's token", async () => {
+      const other = await prisma.user.create({
+        data: { email: `token-${randomUUID()}@test.local` },
+      });
+      try {
+        const { refreshToken } = await tokens.issueTokens(other.id);
+
+        await tokens.revoke(refreshToken, userId);
+
+        await expect(tokens.rotate(refreshToken)).resolves.toMatchObject({
+          userId: other.id,
+        });
+      } finally {
+        await prisma.user.delete({ where: { id: other.id } });
+      }
     });
   });
 });
