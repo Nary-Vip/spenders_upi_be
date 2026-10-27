@@ -1,7 +1,13 @@
-import { ConflictException, Injectable } from '@nestjs/common';
-import { Prisma, User } from '../generated/prisma/client.js';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { User } from '../generated/prisma/client.js';
+import { isPrismaError, UNIQUE_VIOLATION } from '../prisma/prisma-errors.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { DEFAULT_CATEGORIES } from './default-categories.js';
+import { ProfileDto } from './dto/profile.dto.js';
 
 export interface GoogleAccount {
   sub: string;
@@ -39,7 +45,7 @@ export class UsersService {
       });
       return { user, isNewUser: true };
     } catch (error) {
-      if (!this.isUniqueViolation(error)) {
+      if (!isPrismaError(error, UNIQUE_VIOLATION)) {
         throw error;
       }
       const raced = await this.findByGoogleSub(account.sub);
@@ -50,14 +56,32 @@ export class UsersService {
     }
   }
 
-  private findByGoogleSub(googleSub: string) {
-    return this.prisma.user.findUnique({ where: { googleSub } });
+  async getProfile(userId: string): Promise<ProfileDto> {
+    const profile = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        createdAt: true,
+        passkeys: {
+          select: {
+            id: true,
+            deviceName: true,
+            createdAt: true,
+            lastUsedAt: true,
+          },
+          orderBy: { createdAt: 'asc' },
+        },
+      },
+    });
+    if (!profile) {
+      throw new NotFoundException('User not found');
+    }
+    return profile;
   }
 
-  private isUniqueViolation(error: unknown) {
-    return (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === 'P2002'
-    );
+  private findByGoogleSub(googleSub: string) {
+    return this.prisma.user.findUnique({ where: { googleSub } });
   }
 }
