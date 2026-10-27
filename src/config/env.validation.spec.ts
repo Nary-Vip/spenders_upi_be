@@ -4,6 +4,7 @@ describe('validateEnv', () => {
   const required = {
     DATABASE_URL: 'postgres://localhost:5432/test',
     JWT_SECRET: 'a'.repeat(32),
+    GOOGLE_WEB_CLIENT_ID: 'web-client-id.apps.googleusercontent.com',
   };
 
   it('applies defaults when optional vars are missing', () => {
@@ -45,5 +46,11 @@ describe('validateEnv', () => {
     expect(() => validateEnv({ ...required, JWT_ACCESS_TTL: 'soon' })).toThrow(
       /JWT_ACCESS_TTL/,
     );
+  });
+
+  it('requires GOOGLE_WEB_CLIENT_ID', () => {
+    const { GOOGLE_WEB_CLIENT_ID: _omitted, ...rest } = required;
+
+    expect(() => validateEnv(rest)).toThrow(/GOOGLE_WEB_CLIENT_ID/);
   });
 });

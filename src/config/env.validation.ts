@@ -41,6 +41,10 @@ export class EnvironmentVariables {
   @IsInt()
   @Min(1)
   REFRESH_TTL_DAYS: number = 30;
+
+  @IsString()
+  @IsNotEmpty()
+  GOOGLE_WEB_CLIENT_ID: string;
 }
 
 export function validateEnv(config: Record<string, unknown>) {
