@@ -36,7 +36,7 @@ export class CategoriesService {
   async create(userId: string, dto: CreateCategoryDto): Promise<CategoryDto> {
     try {
       return await this.prisma.category.create({
-        data: { ...dto, userId },
+        data: { userId, name: dto.name, icon: dto.icon, color: dto.color },
         select: CATEGORY_FIELDS,
       });
     } catch (error) {
